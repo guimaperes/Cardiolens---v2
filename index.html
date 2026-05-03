@@ -12,6 +12,9 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- PDF.js para renderizar PDFs de ECG como imagem -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(typeof pdfjsLib!=='undefined') pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -650,17 +653,48 @@ function refreshStep2(){
 function handleFile(e){
   const file=e.target.files[0]; if(!file) return;
   document.getElementById('ecgFn').textContent=file.name;
-  
-  // Store base64 for AI vision
-  const reader=new FileReader();
-  reader.onload=function(ev){
-    const b64=ev.target.result.split(',')[1];
-    uploadedB64=b64;
-    uploadedMime=file.type||'image/jpeg';
-    drawECG(ev.target.result);
-  };
-  reader.readAsDataURL(file);
-  
+
+  // If PDF: render first page to canvas, then use as image
+  if(file.type==='application/pdf'){
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      const pdfData=new Uint8Array(ev.target.result);
+      // Use PDF.js CDN to render PDF to canvas
+      pdfjsLib.getDocument({data:pdfData}).promise.then(function(pdf){
+        pdf.getPage(1).then(function(page){
+          const scale=2.0;
+          const viewport=page.getViewport({scale});
+          const canvas=document.getElementById('ecgCanvas');
+          const ctx=canvas.getContext('2d');
+          canvas.width=viewport.width;
+          canvas.height=viewport.height;
+          page.render({canvasContext:ctx,viewport}).promise.then(function(){
+            const imgData=canvas.toDataURL('image/jpeg',0.95);
+            uploadedB64=imgData.split(',')[1];
+            uploadedMime='image/jpeg';
+            document.getElementById('upDefault').style.display='none';
+            document.getElementById('upPreview').style.display='block';
+            document.getElementById('upZone').classList.add('hf');
+          });
+        });
+      }).catch(function(err){
+        showToast('Erro ao ler PDF. Tente uma foto JPG/PNG.');
+        console.error(err);
+      });
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    // Image file: read as base64 directly
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      const b64=ev.target.result.split(',')[1];
+      uploadedB64=b64;
+      uploadedMime=file.type||'image/jpeg';
+      drawECG(ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+
   document.getElementById('upDefault').style.display='none';
   document.getElementById('upPreview').style.display='block';
   document.getElementById('upZone').classList.add('hf');
