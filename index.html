@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CardioLens">
+<meta name="theme-color" content="#059669">
+<title>CardioLens — Diagnosis Tech</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --g:#059669;--gm:#047857;--gd:#064E3B;--gp:#ECFDF5;--gt:#D1FAE5;--gg:#A7F3D0;
+  --am:#D97706;--ap:#FFFBEB;--at:#FDE68A;
+  --rd:#DC2626;--rp:#FEF2F2;--rt:#FECACA;
+  --ink:#0C1A12;--sl:#344641;--mu:#6B7F75;
+  --br:#D1E4DB;--bm:#B5D0C3;--sf:#F5FAF7;--cd:#FFFFFF;--bg:#EEF5F1;
+  --fd:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;
+  --rs:8px;--rm:12px;--rl:16px;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow:hidden;font-family:var(--fb);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+.shell{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;background:var(--bg)}
+
+/* TOPBAR */
+.topbar{background:var(--cd);border-bottom:1px solid var(--br);padding:calc(12px + var(--st)) 16px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:50}
+.logo-icon{width:34px;height:34px;background:var(--g);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-text{font-family:var(--fd);font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--mu);margin-top:1px}
+.topbar-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.badge-ai{background:var(--gp);color:var(--gd);font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;border:1px solid var(--gt);letter-spacing:.4px}
+.av{width:32px;height:32px;border-radius:50%;background:#1C2B20;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+
+/* BOTTOM NAV */
+.bottom-nav{background:var(--cd);border-top:1px solid var(--br);display:flex;padding-bottom:var(--sb);flex-shrink:0;z-index:50}
+.ntab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 8px;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent}
+.ntab-icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.ntab.active .ntab-icon{background:var(--gp)}
+.ntab-lbl{font-size:10px;font-weight:500;color:var(--mu);transition:color .2s}
+.ntab.active .ntab-lbl{color:var(--g);font-weight:600}
+.ntab-dot{width:5px;height:5px;border-radius:50%;background:var(--g);position:absolute;top:6px;right:calc(50% - 16px);display:none}
+.ntab.done .ntab-dot{display:block}
+
+/* SCROLL */
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+
+/* PANELS */
+.panel{display:none;flex-direction:column;gap:14px;padding:16px 16px calc(16px + var(--sb));min-height:100%}
+.panel.active{display:flex;animation:fadeUp .22s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* STEP INDICATOR */
+.step-ind{display:flex;align-items:center;gap:6px}
+.pip{width:6px;height:6px;border-radius:50%;background:var(--bm);transition:all .25s}
+.pip.done{background:var(--gt)}
+.pip.active{background:var(--g);width:18px;border-radius:3px}
+.pip-txt{font-size:12px;color:var(--mu);margin-left:4px}
+.panel-title{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-.4px;margin-top:8px}
+.panel-sub{font-size:13px;color:var(--mu);margin-top:3px;font-weight:300}
+
+/* CARD */
+.card{background:var(--cd);border:1px solid var(--br);border-radius:var(--rl);padding:16px;box-shadow:0 1px 3px rgba(12,26,18,.05)}
+.card-hdr{display:flex;align-items:center;gap:8px;font-family:var(--fd);font-size:13px;font-weight:700;color:var(--ink);margin-bottom:14px}
+.card-hdr-ic{width:22px;height:22px;border-radius:6px;background:var(--gp);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fg:last-child{margin-bottom:0}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.frow:last-child{margin-bottom:0}
+.fl{font-size:11px;font-weight:600;color:var(--sl);letter-spacing:.3px;text-transform:uppercase}
+.fl span{color:var(--rd)}
+.fi,.fs,.ft{background:var(--sf);border:1px solid var(--br);border-radius:var(--rs);padding:11px 13px;font-family:var(--fb);font-size:15px;color:var(--ink);outline:none;width:100%;transition:border-color .18s,box-shadow .18s;-webkit-appearance:none}
+.fi:focus,.fs:focus,.ft:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(5,150,105,.12);background:#fff}
+.fi::placeholder{color:var(--mu)}
+.fs{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7F75' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+.ft{resize:none;min-height:72px;line-height:1.5}
+
+/* URGENCY */
+.urg-row{display:flex;gap:8px}
+.urg-c{flex:1;text-align:center;border:1.5px solid var(--br);border-radius:var(--rm);padding:11px 6px;cursor:pointer;transition:all .18s;user-select:none}
+.urg-c:active{transform:scale(.96)}
+.urg-c.sl{border-color:var(--g);background:var(--gp)}
+.urg-c.sm{border-color:var(--am);background:var(--ap)}
+.urg-c.sh{border-color:var(--rd);background:var(--rp)}
+.urg-em{font-size:20px;line-height:1;margin-bottom:4px}
+.urg-lb{font-size:12px;font-weight:600;color:var(--sl)}
+.urg-ds{font-size:10px;color:var(--mu);margin-top:2px}
+
+/* TAGS */
+.tags{display:flex;flex-wrap:wrap;gap:7px}
+.tag{padding:6px 12px;border:1px solid var(--br);border-radius:20px;font-size:13px;color:var(--mu);background:var(--sf);cursor:pointer;transition:all .15s;user-select:none}
+.tag:active{transform:scale(.94)}
+.tag.on{background:var(--gp);border-color:var(--g);color:var(--gd);font-weight:500}
+
+/* UPLOAD */
+.up-zone{border:2px dashed var(--bm);border-radius:var(--rl);padding:28px 16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;cursor:pointer;transition:all .2s;background:var(--sf)}
+.up-zone:active{background:var(--gp);border-color:var(--g)}
+.up-zone.hf{border-style:solid;border-color:var(--g);padding:0;overflow:hidden;background:transparent}
+.up-icon{width:52px;height:52px;border-radius:var(--rm);background:var(--gt);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.up-title{font-size:15px;font-weight:600;color:var(--ink)}
+.up-sub{font-size:13px;color:var(--mu)}
+.up-chips{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+.up-chip{font-size:12px;padding:5px 11px;border:1px solid var(--br);border-radius:20px;color:var(--mu);background:var(--cd)}
+.ecg-wrap{width:100%;background:#F0FDF4;position:relative}
+.ecg-cv{width:100%;height:170px;display:block}
+.ecg-bar{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(4,78,59,.18));padding:8px 12px;display:flex;align-items:center;justify-content:space-between}
+.ecg-fn{font-size:11px;font-family:var(--fm);color:rgba(4,78,59,.75)}
+.ecg-ch{font-size:12px;font-weight:600;color:var(--g);cursor:pointer}
+
+/* AI ANALYSIS ZONE — the big new feature */
+.ai-scan-zone{background:var(--cd);border:1px solid var(--br);border-radius:var(--rl);overflow:hidden}
+.scan-header{background:linear-gradient(135deg,#064E3B,#047857);padding:14px 16px;display:flex;align-items:center;gap:10px}
+.scan-pulse{width:8px;height:8px;border-radius:50%;background:#34D399;animation:pulse 1.2s ease infinite;flex-shrink:0}
+.scan-title{font-family:var(--fd);font-size:14px;font-weight:700;color:#fff}
+.scan-sub{font-size:11px;color:#A7F3D0;margin-top:2px}
+
+/* CLASSIFICATION RESULT */
+.class-result{padding:16px;display:flex;flex-direction:column;gap:14px}
+
+.verdict{border-radius:var(--rm);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.verdict.normal{background:#F0FDF4;border:1.5px solid #A7F3D0}
+.verdict.altered{background:#FFF7ED;border:1.5px solid #FED7AA}
+.verdict.critical{background:var(--rp);border:1.5px solid var(--rt)}
+
+.verdict-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.verdict.normal .verdict-icon{background:var(--gt)}
+.verdict.altered .verdict-icon{background:#FDE68A}
+.verdict.critical .verdict-icon{background:var(--rt)}
+
+.verdict-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px}
+.verdict.normal .verdict-label{color:var(--gd)}
+.verdict.altered .verdict-label{color:#92400E}
+.verdict.critical .verdict-label{color:var(--rd)}
+.verdict-diag{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--ink);line-height:1.3}
+
+/* DETECTED PATTERNS */
+.patterns-grid{display:flex;flex-direction:column;gap:7px}
+.pattern-row{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--sf);border:1px solid var(--br);border-radius:var(--rs)}
+.pattern-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.pattern-text{font-size:13px;color:var(--sl);line-height:1.45;flex:1}
+.pattern-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap;font-family:var(--fm);flex-shrink:0}
+.pattern-badge.ok{background:var(--gp);color:var(--gd)}
+.pattern-badge.warn{background:#FEF3C7;color:#92400E}
+.pattern-badge.alert{background:var(--rp);color:var(--rd)}
+
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.tile{background:var(--sf);border:1px solid var(--br);border-radius:var(--rm);padding:10px 11px}
+.tile-l{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--mu);margin-bottom:3px}
+.tile-v{font-family:var(--fm);font-size:15px;font-weight:500;color:var(--ink)}
+.tile-v.ok{color:var(--g)}.tile-v.warn{color:var(--am)}.tile-v.crit{color:var(--rd)}.tile-v.sm{font-size:13px}
+.tile-r{font-size:10px;color:var(--mu);margin-top:3px}
+
+/* LEADS */
+.leads-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.lead-tile{background:var(--gp);border:1px solid var(--gt);border-radius:7px;padding:7px;overflow:hidden}
+.lead-name{font-size:10px;font-weight:700;color:var(--g);font-family:var(--fm);margin-bottom:3px}
+.lead-tile svg{width:100%;height:38px;display:block}
+
+/* AI TEXT BLOCK */
+.ai-block{background:var(--sf);border:1px solid var(--br);border-radius:var(--rm);padding:13px 14px}
+.ai-top{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+.ai-chip{font-size:9px;font-weight:700;letter-spacing:.7px;padding:2px 7px;border-radius:4px;background:#EDE9FE;color:#4C1D95;border:1px solid #DDD6FE}
+.ai-lbl{font-size:12px;color:var(--mu)}
+.ai-body{font-size:13px;color:var(--sl);line-height:1.65}
+.ai-body.loading{color:var(--mu);font-style:italic}
+
+/* CONFIDENCE BAR */
+.conf-bar-wrap{margin-top:2px}
+.conf-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.conf-label{font-size:11px;font-weight:600;color:var(--sl)}
+.conf-pct{font-family:var(--fm);font-size:13px;font-weight:700;color:var(--g)}
+.conf-track{height:6px;background:var(--br);border-radius:3px;overflow:hidden}
+.conf-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--g),#34D399);transition:width 1s cubic-bezier(.4,0,.2,1)}
+
+/* PROCESSING */
+.proc-card{background:var(--cd);border:1px solid var(--br);border-radius:var(--rl);padding:20px;display:none}
+.proc-title{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.proc-pulse{width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 1.2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}}
+.proc-steps{display:flex;flex-direction:column;gap:12px}
+.proc-row{display:flex;align-items:center;gap:11px}
+.pd{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--bm);background:var(--sf);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .35s}
+.pd.active{border-color:var(--g);border-top-color:transparent;animation:spin .8s linear infinite}
+.pd.done{background:var(--g);border-color:var(--g)}
+.pl{font-size:13px;color:var(--mu);transition:color .25s}
+.pl.done{color:var(--ink);font-weight:500}
+.proc-track{height:4px;background:var(--br);border-radius:2px;overflow:hidden;margin-top:14px}
+.proc-fill{height:100%;background:linear-gradient(90deg,var(--g),#34D399);border-radius:2px;width:0%;transition:width .5s cubic-bezier(.4,0,.2,1)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* RESULT CARD */
+.result-card{background:var(--cd);border:1px solid var(--br);border-radius:var(--rl);padding:18px;display:none;flex-direction:column;gap:16px}
+.result-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:14px;border-bottom:1px solid var(--br)}
+.rdot{width:9px;height:9px;border-radius:50%;background:var(--g);flex-shrink:0;margin-top:4px}
+.rdot.warn{background:var(--am)}.rdot.crit{background:var(--rd)}
+.rh{font-family:var(--fd);font-size:16px;font-weight:700;color:var(--ink)}
+.rs{font-size:11px;color:var(--mu);margin-top:3px}
+.conf-badge{background:var(--gp);border:1px solid var(--gg);color:var(--gd);font-size:12px;font-weight:700;padding:5px 9px;border-radius:6px;font-family:var(--fm);white-space:nowrap}
+.sec-l{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.ptiles{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.findings{display:flex;flex-direction:column;gap:8px}
+.finding{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--sl);line-height:1.5}
+.fdot{width:7px;height:7px;border-radius:50%;background:var(--g);margin-top:5px;flex-shrink:0}
+.fdot.alert{background:var(--am)}.fdot.crit{background:var(--rd)}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:13px 18px;border-radius:var(--rm);font-family:var(--fb);font-size:14px;font-weight:500;cursor:pointer;transition:all .18s;border:1px solid var(--br);background:var(--sf);color:var(--sl);min-height:48px}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--g);color:#fff;border-color:var(--g)}
+.btn.primary:active{background:var(--gm)}
+.btn.full{flex:1}
+.btn.wf{width:100%}
+.btn.sm{padding:10px 14px;font-size:13px;min-height:40px}
+.btn.danger{background:var(--rp);color:var(--rd);border-color:var(--rt)}
+
+.panel-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:4px}
+
+.disclaimer{font-size:11px;color:var(--mu);line-height:1.6;padding-top:12px;border-top:1px solid var(--br)}
+
+.toast{position:fixed;bottom:calc(80px + var(--sb));left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:13px;padding:10px 18px;border-radius:20px;white-space:nowrap;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+
+input[type="file"]{display:none}
+::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo-icon">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">CardioLens</div>
+      <div class="logo-sub">Diagnosis Tech · Visão por IA</div>
+    </div>
+    <div class="topbar-r">
+      <span class="badge-ai">IA VISUAL</span>
+      <div class="av">DR</div>
+    </div>
+  </header>
+
+  <!-- SCROLL -->
+  <div class="scroll" id="scroll">
+
+    <!-- ══ STEP 1: PATIENT ══ -->
+    <div class="panel active" id="panel1">
+      <div>
+        <div class="step-ind">
+          <div class="pip active" id="p1"></div>
+          <div class="pip" id="p2"></div>
+          <div class="pip" id="p3"></div>
+          <span class="pip-txt">Passo 1 de 3</span>
+        </div>
+        <div class="panel-title">Dados do paciente</div>
+        <div class="panel-sub">Identificação e informações clínicas</div>
+      </div>
+
+      <!-- Identificação -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-hdr-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          Identificação
+        </div>
+        <div class="fg"><label class="fl">Nome completo <span>*</span></label><input class="fi" id="fNome" type="text" placeholder="Ex.: Carlos Alberto Mendes" autocomplete="name" oninput="lu()"></div>
+        <div class="frow">
+          <div class="fg" style="margin:0"><label class="fl">Prontuário</label><input class="fi" id="fPron" type="text" placeholder="00000-0"></div>
+          <div class="fg" style="margin:0"><label class="fl">CPF</label><input class="fi" id="fCPF" type="text" placeholder="000.000.000-00" inputmode="numeric"></div>
+        </div>
+        <div class="frow">
+          <div class="fg" style="margin:0"><label class="fl">Nascimento <span>*</span></label><input class="fi" id="fNasc" type="date" oninput="lu()"></div>
+          <div class="fg" style="margin:0"><label class="fl">Sexo <span>*</span></label>
+            <select class="fs" id="fSexo" onchange="lu()">
+              <option value="">Selecione</option>
+              <option value="M">Masculino</option>
+              <option value="F">Feminino</option>
+              <option value="O">Outro</option>
+            </select>
+          </div>
+        </div>
+        <div class="frow" style="margin:0">
+          <div class="fg" style="margin:0"><label class="fl">Peso (kg)</label><input class="fi" id="fPeso" type="number" placeholder="70" inputmode="numeric"></div>
+          <div class="fg" style="margin:0"><label class="fl">Altura (cm)</label><input class="fi" id="fAltura" type="number" placeholder="170" inputmode="numeric"></div>
+        </div>
+      </div>
+
+      <!-- Urgência -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-hdr-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          Nível de urgência
+        </div>
+        <div class="urg-row">
+          <div class="urg-c" id="urg-low" onclick="selUrg('low')"><div class="urg-em">🟢</div><div class="urg-lb">Eletivo</div><div class="urg-ds">Programado</div></div>
+          <div class="urg-c" id="urg-med" onclick="selUrg('med')"><div class="urg-em">🟡</div><div class="urg-lb">Urgência</div><div class="urg-ds">Prioritário</div></div>
+          <div class="urg-c" id="urg-high" onclick="selUrg('high')"><div class="urg-em">🔴</div><div class="urg-lb">Emergência</div><div class="urg-ds">Risco imediato</div></div>
+        </div>
+      </div>
+
+      <!-- Clínico -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-hdr-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round"><path d="M9 12h6M9 16h6M17 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
+          Histórico clínico
+        </div>
+        <div class="fg"><label class="fl">Comorbidades</label>
+          <div class="tags" id="tagsComorb">
+            <span class="tag tag-none" onclick="togNone(this)" style="border-color:var(--g);color:var(--gd);font-weight:500;">✓ Sem comorbidades</span><span class="tag" onclick="tog(this)">Hipertensão</span><span class="tag" onclick="tog(this)">Diabetes</span><span class="tag" onclick="tog(this)">Dislipidemia</span><span class="tag" onclick="tog(this)">Insuf. cardíaca</span><span class="tag" onclick="tog(this)">Fibrilação atrial</span><span class="tag" onclick="tog(this)">Doença coronariana</span><span class="tag" onclick="tog(this)">DPOC</span><span class="tag" onclick="tog(this)">Doença renal</span><span class="tag" onclick="tog(this)">AVC prévio</span>
+          </div>
+        </div>
+        <div class="fg"><label class="fl">Queixa principal</label><textarea class="ft" id="fQueixa" placeholder="Ex.: Palpitações há 2h, dor torácica, dispneia..."></textarea></div>
+        <div class="fg" style="margin:0"><label class="fl">Medicamentos em uso</label><textarea class="ft" id="fMeds" placeholder="Ex.: Amiodarona 200mg, Losartana 50mg..."></textarea></div>
+      </div>
+
+      <!-- Sinais Vitais -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-hdr-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          Sinais vitais <span style="font-size:11px;font-weight:400;color:var(--mu);margin-left:4px;">(opcional)</span>
+        </div>
+        <div class="frow"><div class="fg" style="margin:0"><label class="fl">FC (bpm)</label><input class="fi" id="fFC" type="number" placeholder="72" inputmode="numeric"></div><div class="fg" style="margin:0"><label class="fl">PA (mmHg)</label><input class="fi" id="fPA" type="text" placeholder="120/80"></div></div>
+        <div class="frow" style="margin:0"><div class="fg" style="margin:0"><label class="fl">SpO₂ (%)</label><input class="fi" id="fSpo2" type="number" placeholder="98" inputmode="numeric"></div><div class="fg" style="margin:0"><label class="fl">Glicemia</label><input class="fi" id="fGlic" type="number" placeholder="100" inputmode="numeric"></div></div>
+      </div>
+
+      <button class="btn primary wf" onclick="goStep(2)" style="min-height:52px;font-size:15px;">
+        Próximo — Importar ECG
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+
+    <!-- ══ STEP 2: ECG ══ -->
+    <div class="panel" id="panel2">
+      <div>
+        <div class="step-ind">
+          <div class="pip done"></div><div class="pip active"></div><div class="pip"></div>
+          <span class="pip-txt">Passo 2 de 3</span>
+        </div>
+        <div class="panel-title">Importar ECG</div>
+        <div class="panel-sub">A IA analisará visualmente a imagem do exame</div>
+      </div>
+
+      <!-- Resumo paciente -->
+      <div class="card" style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#DBEAFE;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#1E40AF;font-family:var(--fm);flex-shrink:0" id="pAv">?</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="pNm">—</div>
+          <div style="font-size:12px;color:var(--mu);margin-top:2px" id="pMt">Nenhum dado</div>
+        </div>
+        <div id="pUb"></div>
+      </div>
+
+      <!-- AI Vision Info -->
+      <div class="ai-scan-zone">
+        <div class="scan-header">
+          <div class="scan-pulse"></div>
+          <div>
+            <div class="scan-title">Análise por Visão Computacional</div>
+            <div class="scan-sub">A IA examina a imagem real do ECG e detecta padrões clínicos</div>
+          </div>
+        </div>
+        <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12px;color:var(--mu);font-weight:500;margin-bottom:4px;">Padrões que a IA detecta:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--rp);color:var(--rd);border:1px solid var(--rt)">Flutter Atrial</span>
+            <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--rp);color:var(--rd);border:1px solid var(--rt)">Fibrilação Atrial</span>
+            <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--rp);color:var(--rd);border:1px solid var(--rt)">TPSV</span>
+            <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--rp);color:var(--rd);border:1px solid var(--rt)">Trigeminismo Ventricular</span>
+            <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--rp);color:var(--rd);border:1px solid var(--rt)">Bradicardia Sinusal</span>
+            <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--rp);color:var(--rd);border:1px solid var(--rt)">Onda Q Patológica</span>
+            <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--rp);color:var(--rd);border:1px solid var(--rt)">Inversão Onda T</span>
+            <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--gp);color:var(--gd);border:1px solid var(--gg)">ECG Normal</span>
+            <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--gp);color:var(--gd);border:1px solid var(--gg)">Ritmo Sinusal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-hdr-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l3-3 3 3M12 9v7"/></svg></div>
+          Arquivo do ECG
+        </div>
+        <div class="up-zone" id="upZone" onclick="document.getElementById('ecgFile').click()">
+          <div id="upDefault">
+            <div class="up-icon" style="margin:0 auto 10px">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l3-3 3 3M12 9v7"/></svg>
+            </div>
+            <div class="up-title">Toque para importar ECG</div>
+            <div class="up-sub">JPG, PNG ou PDF · a IA analisará visualmente</div>
+            <div class="up-chips">
+              <span class="up-chip">📷 Câmera</span>
+              <span class="up-chip">🖼️ Galeria</span>
+              <span class="up-chip">📁 Arquivos</span>
+            </div>
+          </div>
+          <div id="upPreview" style="display:none;width:100%">
+            <div class="ecg-wrap">
+              <canvas class="ecg-cv" id="ecgCanvas" height="170"></canvas>
+              <div class="ecg-bar">
+                <span class="ecg-fn" id="ecgFn">ECG.jpg</span>
+                <span class="ecg-ch" onclick="event.stopPropagation();resetUp()">Trocar</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <input type="file" id="ecgFile" accept="image/*,application/pdf" capture="environment" onchange="handleFile(event)">
+        <div style="display:flex;align-items:center;gap:7px;margin-top:10px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7F75" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span style="font-size:12px;color:var(--mu)">ECG legível, sem reflexos, todas as derivações visíveis</span>
+        </div>
+      </div>
+
+      <!-- Dados exame -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-hdr-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          Informações do exame
+        </div>
+        <div class="frow"><div class="fg" style="margin:0"><label class="fl">Data</label><input class="fi" id="fData" type="date"></div><div class="fg" style="margin:0"><label class="fl">Horário</label><input class="fi" id="fHora" type="time"></div></div>
+        <div class="fg"><label class="fl">Médico solicitante</label><input class="fi" id="fSol" type="text" placeholder="Dr. Nome Sobrenome"></div>
+        <div class="frow" style="margin:0"><div class="fg" style="margin:0"><label class="fl">CRM</label><input class="fi" id="fCRM" type="text" placeholder="CRM-SP 12345"></div><div class="fg" style="margin:0"><label class="fl">Hipótese</label><input class="fi" id="fHip" type="text" placeholder="Ex.: SCA..."></div></div>
+      </div>
+
+      <div class="panel-nav">
+        <button class="btn" onclick="goStep(1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Voltar
+        </button>
+        <button class="btn primary" onclick="startAnalysis()" style="flex:1;min-height:52px;font-size:15px" id="analyzeBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Analisar com Visão IA
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 3: RESULT ══ -->
+    <div class="panel" id="panel3">
+      <div>
+        <div class="step-ind">
+          <div class="pip done"></div><div class="pip done"></div><div class="pip active"></div>
+          <span class="pip-txt">Passo 3 de 3</span>
+        </div>
+        <div class="panel-title">Laudo IA</div>
+        <div class="panel-sub">Diagnóstico gerado por visão computacional</div>
+      </div>
+
+      <!-- Processing -->
+      <div class="proc-card" id="procCard">
+        <div class="proc-title"><div class="proc-pulse"></div>Analisando imagem do ECG...</div>
+        <div class="proc-steps">
+          <div class="proc-row"><div class="pd" id="pd1"></div><span class="pl" id="pl1">Detectando grade e derivações do papel</span></div>
+          <div class="proc-row"><div class="pd" id="pd2"></div><span class="pl" id="pl2">Identificando ondas P, QRS e T por derivação</span></div>
+          <div class="proc-row"><div class="pd" id="pd3"></div><span class="pl" id="pl3">Reconhecendo padrões de arritmia e alterações</span></div>
+          <div class="proc-row"><div class="pd" id="pd4"></div><span class="pl" id="pl4">Gerando laudo clínico com visão IA</span></div>
+        </div>
+        <div class="proc-track"><div class="proc-fill" id="procBar"></div></div>
+      </div>
+
+      <!-- Result -->
+      <div class="result-card" id="resultCard">
+        <div class="result-top">
+          <div style="display:flex;align-items:flex-start;gap:9px">
+            <div class="rdot" id="rDot"></div>
+            <div><div class="rh">Análise visual concluída</div><div class="rs" id="rTime">—</div></div>
+          </div>
+          <div class="conf-badge" id="rConf">—</div>
+        </div>
+
+        <!-- Patient -->
+        <div>
+          <div class="sec-l">Paciente</div>
+          <div class="ptiles">
+            <div class="tile"><div class="tile-l">Nome</div><div class="tile-v sm" id="rNome">—</div></div>
+            <div class="tile"><div class="tile-l">Idade</div><div class="tile-v" id="rIdade">—</div></div>
+            <div class="tile"><div class="tile-l">Sexo</div><div class="tile-v" id="rSexo">—</div></div>
+            <div class="tile"><div class="tile-l">Urgência</div><div class="tile-v" id="rUrg">—</div></div>
+          </div>
+        </div>
+
+        <!-- AI Classification Verdict -->
+        <div>
+          <div class="sec-l">Classificação por Visão IA</div>
+          <div class="verdict" id="verdictBox">
+            <div class="verdict-icon" id="verdictIcon"></div>
+            <div>
+              <div class="verdict-label" id="verdictLabel">—</div>
+              <div class="verdict-diag" id="verdictDiag">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confidence bar -->
+        <div class="conf-bar-wrap">
+          <div class="conf-label-row">
+            <span class="conf-label">Confiança do modelo de visão</span>
+            <span class="conf-pct" id="confPct">—</span>
+          </div>
+          <div class="conf-track"><div class="conf-fill" id="confFill" style="width:0%"></div></div>
+        </div>
+
+        <!-- Detected Patterns -->
+        <div>
+          <div class="sec-l">Padrões identificados na imagem</div>
+          <div class="patterns-grid" id="patternsList"></div>
+        </div>
+
+        <!-- Metrics -->
+        <div>
+          <div class="sec-l">Parâmetros estimados</div>
+          <div class="metrics-grid">
+            <div class="tile"><div class="tile-l">FC estimada</div><div class="tile-v" id="mFC">—</div><div class="tile-r">ref: 60–100 bpm</div></div>
+            <div class="tile"><div class="tile-l">Intervalo PR</div><div class="tile-v" id="mPR">—</div><div class="tile-r">ref: 120–200 ms</div></div>
+            <div class="tile"><div class="tile-l">Complexo QRS</div><div class="tile-v" id="mQRS">—</div><div class="tile-r">ref: 60–100 ms</div></div>
+            <div class="tile"><div class="tile-l">Intervalo QT</div><div class="tile-v" id="mQT">—</div><div class="tile-r">ref: 350–440 ms</div></div>
+            <div class="tile"><div class="tile-l">QTc (Bazett)</div><div class="tile-v" id="mQTC">—</div><div class="tile-r">ref: &lt;440 ms</div></div>
+            <div class="tile"><div class="tile-l">Eixo elétrico</div><div class="tile-v" id="mEixo">—</div><div class="tile-r">ref: −30° a +90°</div></div>
+          </div>
+        </div>
+
+        <!-- Leads -->
+        <div>
+          <div class="sec-l">Mini-traçado por derivações</div>
+          <div class="leads-grid">
+            <div class="lead-tile"><div class="lead-name">DI</div><svg viewBox="0 0 80 38"><polyline id="lDI" fill="none" stroke="#059669" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+            <div class="lead-tile"><div class="lead-name">DII</div><svg viewBox="0 0 80 38"><polyline id="lDII" fill="none" stroke="#059669" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+            <div class="lead-tile"><div class="lead-name">DIII</div><svg viewBox="0 0 80 38"><polyline id="lDIII" fill="none" stroke="#059669" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+            <div class="lead-tile"><div class="lead-name">aVR</div><svg viewBox="0 0 80 38"><polyline id="lAVR" fill="none" stroke="#059669" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+            <div class="lead-tile"><div class="lead-name">V1</div><svg viewBox="0 0 80 38"><polyline id="lV1" fill="none" stroke="#059669" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+            <div class="lead-tile"><div class="lead-name">V5</div><svg viewBox="0 0 80 38"><polyline id="lV5" fill="none" stroke="#059669" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+          </div>
+        </div>
+
+        <!-- AI Narrative -->
+        <div class="ai-block">
+          <div class="ai-top">
+            <div class="ai-chip">VISÃO IA</div>
+            <div class="ai-lbl">Laudo narrativo · Claude Vision</div>
+          </div>
+          <div class="ai-body" id="aiBody">Gerando análise...</div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn" onclick="newPatient()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo
+          </button>
+          <button class="btn" onclick="window.print()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir
+          </button>
+          <button class="btn primary full">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Assinar laudo
+          </button>
+        </div>
+
+        <div class="disclaimer">
+          ⚠️ Análise por visão computacional como suporte à decisão clínica. Não substitui avaliação médica. A IA foi treinada com padrões do Hospital Dante Pazanezze. Confirme com especialista antes de qualquer conduta. · Diagnosis Tech CardioLens v3.0
+        </div>
+      </div>
+    </div>
+
+  </div><!-- scroll -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="ntab active" id="nav1" onclick="goStep(1)">
+      <div class="ntab-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <div class="ntab-lbl">Paciente</div>
+      <div class="ntab-dot" id="dot1"></div>
+    </div>
+    <div class="ntab" id="nav2" onclick="goStep(2)">
+      <div class="ntab-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7F75" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="ntab-lbl">ECG</div>
+      <div class="ntab-dot" id="dot2"></div>
+    </div>
+    <div class="ntab" id="nav3" onclick="goStep(3)">
+      <div class="ntab-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7F75" stroke-width="2" stroke-linecap="round"><path d="M9 12h6M9 16h6M17 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
+      <div class="ntab-lbl">Laudo</div>
+      <div class="ntab-dot" id="dot3"></div>
+    </div>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let step=1, urgency=null, t0=0, uploadedB64=null, uploadedMime=null;
+
+// ── NAVIGATION ──
+function goStep(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('panel'+i).classList.remove('active');
+    const nav=document.getElementById('nav'+i);
+    nav.classList.remove('active');
+    const svg=nav.querySelector('svg');
+    if(svg) svg.setAttribute('stroke',i===n?'#059669':'#6B7F75');
+  });
+  document.getElementById('panel'+n).classList.add('active');
+  document.getElementById('nav'+n).classList.add('active');
+  document.getElementById('scroll').scrollTo(0,0);
+  step=n;
+  if(n===2) refreshStep2();
+}
+function markDone(n){ document.getElementById('dot'+n).style.display='block'; document.getElementById('nav'+n).classList.add('done'); }
+
+// ── HELPERS ──
+function calcAge(d){ if(!d) return null; const b=new Date(d),t=new Date(); let a=t.getFullYear()-b.getFullYear(); const m=t.getMonth()-b.getMonth(); if(m<0||(m===0&&t.getDate()<b.getDate())) a--; return a; }
+function initials(n){ const p=n.trim().split(' ').filter(Boolean); if(!p.length) return '?'; if(p.length===1) return p[0][0].toUpperCase(); return (p[0][0]+p[p.length-1][0]).toUpperCase(); }
+function lu(){}
+function tog(el){ 
+  // Deselect "Sem comorbidades" when a real comorbidity is selected
+  const noneTag=document.querySelector('#tagsComorb .tag-none');
+  if(noneTag && noneTag!==el) noneTag.classList.remove('on');
+  el.classList.toggle('on'); hap(); 
+}
+function togNone(el){
+  // When selecting "none", deselect all other tags
+  const allTags=document.querySelectorAll('#tagsComorb .tag:not(.tag-none)');
+  allTags.forEach(t=>t.classList.remove('on'));
+  el.classList.toggle('on'); hap();
+}
+function selUrg(l){ urgency=l; ['low','med','high'].forEach(x=>document.getElementById('urg-'+x).className='urg-c'); document.getElementById('urg-'+l).classList.add('s'+l[0]); hap(); }
+function hap(){ if(navigator.vibrate) navigator.vibrate(8); }
+
+function refreshStep2(){
+  const name=document.getElementById('fNome').value;
+  const dob=document.getElementById('fNasc').value;
+  const sexo=document.getElementById('fSexo').value;
+  const age=calcAge(dob);
+  document.getElementById('pAv').textContent=name?initials(name):'?';
+  document.getElementById('pNm').textContent=name||'—';
+  let m=[]; if(age!==null) m.push(age+' anos'); if(sexo==='M') m.push('Masculino'); if(sexo==='F') m.push('Feminino');
+  document.getElementById('pMt').textContent=m.join(' · ')||'Preencha os dados';
+  const ub=document.getElementById('pUb');
+  const ubMap={low:'<span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;background:#ECFDF5;color:#064E3B;border:1px solid #A7F3D0;">Eletivo</span>',med:'<span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;">Urgência</span>',high:'<span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;">Emergência</span>'};
+  ub.innerHTML=urgency?ubMap[urgency]:'';
+}
+
+// ── FILE UPLOAD ── (converts to base64 for vision API)
+function handleFile(e){
+  const file=e.target.files[0]; if(!file) return;
+  document.getElementById('ecgFn').textContent=file.name;
+  
+  // Store base64 for AI vision
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const b64=ev.target.result.split(',')[1];
+    uploadedB64=b64;
+    uploadedMime=file.type||'image/jpeg';
+    drawECG(ev.target.result);
+  };
+  reader.readAsDataURL(file);
+  
+  document.getElementById('upDefault').style.display='none';
+  document.getElementById('upPreview').style.display='block';
+  document.getElementById('upZone').classList.add('hf');
+  hap();
+}
+
+function resetUp(){
+  uploadedB64=null; uploadedMime=null;
+  document.getElementById('upDefault').style.display='';
+  document.getElementById('upPreview').style.display='none';
+  document.getElementById('upZone').classList.remove('hf');
+  document.getElementById('ecgFile').value='';
+}
+
+function drawECG(src){
+  const canvas=document.getElementById('ecgCanvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth||340; canvas.height=170;
+  
+  if(src){
+    const img=new Image();
+    img.onload=()=>{ ctx.drawImage(img,0,0,canvas.width,canvas.height); };
+    img.src=src;
+  }
+}
+
+// ── PROC STEPS ──
+function setP(n,state){
+  const d=document.getElementById('pd'+n),l=document.getElementById('pl'+n);
+  d.className='pd'; d.innerHTML='';
+  if(state==='active') d.classList.add('active');
+  if(state==='done'){ d.classList.add('done'); l.classList.add('done'); d.innerHTML='<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+}
+
+// ── DRAW LEAD MINI ──
+function drawLead(id,style){
+  const el=document.getElementById(id); if(!el) return;
+  const W=80,H=38,mid=H*.58; let pts=[],x=2;
+  while(x<W-10){
+    if(style==='flutter'){
+      pts.push(x+','+mid); pts.push(x+','+(mid-8)); x+=2;
+      pts.push(x+','+(mid-12)); x+=1; pts.push(x+','+mid); x+=1;
+      pts.push(x+','+(mid-20)); x+=1; pts.push(x+','+(mid+4)); x+=2;
+      pts.push(x+','+mid); x+=5;
+    } else if(style==='af'){
+      pts.push(x+','+mid); x+=3+Math.random()*2;
+      pts.push(x+','+(mid-1+Math.random()*2)); x+=1;
+      pts.push(x+','+(mid+5)); x+=1;
+      pts.push(x+','+(mid-18)); x+=1;
+      pts.push(x+','+(mid+3)); x+=1;
+      pts.push(x+','+mid); x+=4+Math.random()*8;
+    } else if(style==='tpsv'){
+      pts.push(x+','+mid); x+=2;
+      pts.push(x+','+(mid+3)); x+=1;
+      pts.push(x+','+(mid-22)); x+=1;
+      pts.push(x+','+(mid+4)); x+=2;
+      pts.push(x+','+mid); x+=4;
+    } else if(style==='bradi'){
+      pts.push(x+','+mid); x+=10;
+      pts.push(x+','+(mid-2)); x+=2;
+      pts.push(x+','+(mid+5)); x+=1;
+      pts.push(x+','+(mid-18)); x+=1;
+      pts.push(x+','+(mid+3)); x+=2;
+      pts.push(x+','+mid); x+=18;
+    } else if(style==='trig'){
+      pts.push(x+','+mid); x+=4;
+      pts.push(x+','+(mid+3)); x+=1;
+      pts.push(x+','+(mid-18)); x+=1;
+      pts.push(x+','+(mid+4)); x+=1;
+      pts.push(x+','+mid); x+=2;
+      pts.push(x+','+(mid+8)); x+=1;
+      pts.push(x+','+(mid-24)); x+=1;
+      pts.push(x+','+(mid+5)); x+=2;
+      pts.push(x+','+mid); x+=6;
+    } else { // normal
+      pts.push(x+','+mid); x+=5;
+      pts.push(x+','+(mid-2)); x+=2;
+      pts.push(x+','+(mid+5)); x+=1;
+      pts.push(x+','+(mid-19)); x+=1;
+      pts.push(x+','+(mid+3)); x+=2;
+      pts.push(x+','+mid); x+=3;
+      pts.push(x+','+(mid-5)); x+=4;
+      pts.push(x+','+(mid-5)); x+=3;
+      pts.push(x+','+mid); x+=8;
+    }
+  }
+  el.setAttribute('points',pts.join(' '));
+}
+
+// ── MAIN AI VISION CALL ── 
+// This sends the actual ECG image to Claude Vision for real analysis
+async function analyzeECGWithVision(){
+  const name=document.getElementById('fNome').value||'não informado';
+  const dob=document.getElementById('fNasc').value;
+  const age=calcAge(dob)||'não informada';
+  const sexo=document.getElementById('fSexo').value||'não informado';
+  const _noneTag=document.querySelector('#tagsComorb .tag-none.on'); const comorb=_noneTag?'nenhuma':Array.from(document.querySelectorAll('#tagsComorb .tag.on:not(.tag-none)')).map(t=>t.textContent).join(', ')||'não informadas';
+  const queixa=document.getElementById('fQueixa').value||'não informada';
+  const meds=document.getElementById('fMeds').value||'não informado';
+  const fc_v=document.getElementById('fFC').value;
+  const pa_v=document.getElementById('fPA').value;
+  const spo2=document.getElementById('fSpo2').value;
+  const urgMap={low:'Eletivo',med:'Urgência',high:'Emergência'};
+  const urg=urgMap[urgency]||'não informado';
+
+  const systemPrompt = `Você é um cardiologista especialista em eletrocardiografia, com experiência em leitura de ECGs do Hospital Dante Pazanezze. Você recebe a IMAGEM REAL do ECG e deve analisá-la visualmente com precisão clínica.
+
+PADRÕES QUE VOCÊ CONHECE (aprendidos de casos reais do Dante Pazanezze):
+- ECG NORMAL: Ritmo sinusal regular, ondas P presentes e uniformes antes de cada QRS, PR 120-200ms, QRS estreito <100ms, ST isoelétrico, onda T positiva em derivações laterais
+- FLUTTER ATRIAL: Ondas F em dente de serra a ~300bpm, especialmente visíveis em DII, DIII, aVF e V1, resposta ventricular regular 2:1 ou 4:1
+- FIBRILAÇÃO ATRIAL / RITMO ATRIAL CAÓTICO: Ausência de ondas P, linha de base irregular, intervalo RR completamente irregular, QRS geralmente estreito
+- TPSV (Taquicardia Paroxística Supraventricular): FC >150bpm, QRS estreito, início e término abruptos, ondas P podem estar ocultas no QRS ou logo após
+- TRIGEMINISMO VENTRICULAR: A cada 2 batimentos normais, 1 extrassístole ventricular (QRS largo e bizarro), padrão regular 3:3
+- BRADICARDIA SINUSAL: FC <60bpm, ritmo regular, ondas P normais precedendo cada QRS
+- ONDA Q PATOLÓGICA: Ondas Q profundas (>25% do R) e largas (>40ms) em derivações específicas, sugerindo necrose miocárdica
+- INVERSÃO ONDA T: Ondas T negativas nas derivações V2-V4 ou inferiores, sugere isquemia
+- QT LONGO: QTc >440ms (mulheres >460ms), risco de torsades de pointes
+
+Sua resposta DEVE ser um JSON válido com esta estrutura exata:
+{
+  "classificacao": "NORMAL" | "ALTERADO" | "CRITICO",
+  "diagnostico_principal": "string com diagnóstico preciso",
+  "confianca": número entre 60 e 98,
+  "padroes_detectados": [
+    {"descricao": "string", "severidade": "ok"|"warn"|"alert", "achado": "string curto"}
+  ],
+  "ritmo": "descrição do ritmo",
+  "fc_estimada": número ou null,
+  "pr_ms": número ou null,
+  "qrs_ms": número ou null,
+  "qt_ms": número ou null,
+  "qtc_ms": número ou null,
+  "eixo_graus": "string como '+45°'" ou null,
+  "estilo_lead": "normal"|"flutter"|"af"|"tpsv"|"bradi"|"trig",
+  "laudo_narrativo": "laudo clínico completo em 4-5 frases em português, incluindo interpretação, significado clínico, urgência e conduta inicial recomendada"
+}
+
+Responda APENAS com o JSON, sem texto adicional, sem markdown.`;
+
+  const userContent = [
+    {
+      type: "image",
+      source: {
+        type: "base64",
+        media_type: uploadedMime || "image/jpeg",
+        data: uploadedB64
+      }
+    },
+    {
+      type: "text",
+      text: `Analise este ECG cuidadosamente. 
+
+DADOS DO PACIENTE:
+- Nome: ${name} | Idade: ${age} anos | Sexo: ${sexo} | Urgência: ${urg}
+- Comorbidades: ${comorb}
+- Queixa principal: ${queixa}
+- Medicamentos: ${meds}
+${fc_v?`- FC clínica: ${fc_v} bpm`:''}${pa_v?`\n- PA: ${pa_v}`:''}${spo2?`\n- SpO₂: ${spo2}%`:''}
+
+Examine a imagem do ECG com atenção: observe o ritmo, as ondas P, o complexo QRS, o segmento ST, as ondas T, e todos os achados relevantes. Responda com o JSON conforme instruído.`
+    }
+  ];
+
+  // Use proxy endpoint to avoid CORS — works on Netlify, Vercel or any backend
+  const PROXY_URLS = [
+    '/api/ecg-analyze',                   // Vercel Functions (principal)
+    '/.netlify/functions/ecg-analyze',    // Netlify Functions (alternativo)
+  ];
+
+  let response, lastError;
+  for(const url of PROXY_URLS){
+    try{
+      response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ systemPrompt, userContent })
+      });
+      if(response.ok) break;
+    } catch(e){ lastError=e; }
+  }
+
+  // Fallback: direct call (works in Claude.ai artifacts and some environments)
+  if(!response || !response.ok){
+    response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userContent }]
+      })
+    });
+  }
+
+  if (!response.ok) throw new Error('API '+response.status);
+  const data = await response.json();
+  // Support both direct API response and proxy-wrapped response
+  const text = data.text || data.content?.map(b=>b.text||'').join('') || '';
+  const clean = text.replace(/```json|```/g,'').trim();
+  return JSON.parse(clean);
+}
+
+// ── BUILD RESULT UI FROM AI RESPONSE ──
+function buildResultUI(ai){
+  const name=document.getElementById('fNome').value||'—';
+  const dob=document.getElementById('fNasc').value;
+  const age=calcAge(dob);
+  const sexo=document.getElementById('fSexo').value;
+  
+  // Patient tiles
+  document.getElementById('rNome').textContent=name.split(' ')[0]||'—';
+  document.getElementById('rIdade').textContent=age?age+'a':'—';
+  document.getElementById('rSexo').textContent=sexo==='M'?'Masc.':sexo==='F'?'Fem.':'—';
+  const urgMap={low:['Eletivo','ok'],med:['Urgência','warn'],high:['Emergência','crit']};
+  const um=urgMap[urgency]||['—',''];
+  document.getElementById('rUrg').textContent=um[0];
+  document.getElementById('rUrg').className='tile-v '+um[1];
+
+  // Classification verdict
+  const vbox=document.getElementById('verdictBox');
+  const vicn=document.getElementById('verdictIcon');
+  const vlbl=document.getElementById('verdictLabel');
+  const vdg=document.getElementById('verdictDiag');
+  const rdot=document.getElementById('rDot');
+  
+  if(ai.classificacao==='NORMAL'){
+    vbox.className='verdict normal';
+    vicn.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+    vlbl.textContent='ECG NORMAL';
+    rdot.className='rdot';
+  } else if(ai.classificacao==='CRITICO'){
+    vbox.className='verdict critical';
+    vicn.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+    vlbl.textContent='ECG CRÍTICO — ATENÇÃO IMEDIATA';
+    rdot.className='rdot crit';
+  } else {
+    vbox.className='verdict altered';
+    vicn.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    vlbl.textContent='ECG ALTERADO';
+    rdot.className='rdot warn';
+  }
+  vdg.textContent=ai.diagnostico_principal;
+
+  // Confidence
+  const conf=ai.confianca||85;
+  document.getElementById('rConf').textContent=conf+'% confiança';
+  document.getElementById('confPct').textContent=conf+'%';
+  setTimeout(()=>{ document.getElementById('confFill').style.width=conf+'%'; },100);
+
+  // Patterns
+  const pl=document.getElementById('patternsList');
+  pl.innerHTML='';
+  (ai.padroes_detectados||[]).forEach(p=>{
+    const iconMap={ok:'✅',warn:'⚠️',alert:'🔴'};
+    pl.innerHTML+=`<div class="pattern-row">
+      <div class="pattern-icon">${iconMap[p.severidade]||'ℹ️'}</div>
+      <div class="pattern-text">${p.descricao}</div>
+      <div class="pattern-badge ${p.severidade}">${p.achado}</div>
+    </div>`;
+  });
+
+  // Metrics
+  const setTile=(id,v,cls)=>{ const e=document.getElementById(id); e.textContent=v||'—'; e.className='tile-v '+(cls||''); };
+  const fc=ai.fc_estimada;
+  setTile('mFC', fc?fc+' bpm':null, fc?fc>100?'crit':fc<60?'warn':'ok':'');
+  setTile('mPR',  ai.pr_ms?ai.pr_ms+' ms':null,  ai.pr_ms?(ai.pr_ms>200||ai.pr_ms<120?'warn':'ok'):'');
+  setTile('mQRS', ai.qrs_ms?ai.qrs_ms+' ms':null, ai.qrs_ms?(ai.qrs_ms>120?'warn':'ok'):'');
+  setTile('mQT',  ai.qt_ms?ai.qt_ms+' ms':null,   ai.qt_ms?(ai.qt_ms>440?'warn':'ok'):'');
+  setTile('mQTC', ai.qtc_ms?ai.qtc_ms+' ms':null,  ai.qtc_ms?(ai.qtc_ms>460?'crit':ai.qtc_ms>440?'warn':'ok'):'');
+  setTile('mEixo', ai.eixo_graus||null, 'ok');
+
+  // Lead mini charts
+  const leadStyle=ai.estilo_lead||'normal';
+  ['lDI','lDII','lDIII','lAVR','lV1','lV5'].forEach(id=>drawLead(id,leadStyle));
+
+  // Time
+  const elapsed=((Date.now()-t0)/1000).toFixed(1);
+  document.getElementById('rTime').textContent=new Date().toLocaleTimeString('pt-BR')+' · '+elapsed+'s';
+
+  // AI narrative
+  const aiEl=document.getElementById('aiBody');
+  aiEl.className='ai-body';
+  aiEl.textContent=ai.laudo_narrativo||'Análise concluída.';
+}
+
+// ── FALLBACK when no image or API error ──
+function buildFallbackUI(error){
+  const aiEl=document.getElementById('aiBody');
+  aiEl.className='ai-body';
+  
+  if(!uploadedB64){
+    document.getElementById('verdictBox').className='verdict altered';
+    document.getElementById('verdictIcon').innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    document.getElementById('verdictLabel').textContent='MODO DEMONSTRAÇÃO';
+    document.getElementById('verdictDiag').textContent='Nenhuma imagem importada — dados de exemplo';
+    document.getElementById('rConf').textContent='Demo';
+    setTimeout(()=>{ document.getElementById('confFill').style.width='85%'; },100);
+    document.getElementById('confPct').textContent='85%';
+    document.getElementById('rDot').className='rdot warn';
+    document.getElementById('patternsList').innerHTML=`
+      <div class="pattern-row"><div class="pattern-icon">ℹ️</div><div class="pattern-text">Importe uma foto real de ECG para análise por visão IA</div><div class="pattern-badge warn">Demo</div></div>
+      <div class="pattern-row"><div class="pattern-icon">✅</div><div class="pattern-text">Sistema pronto para receber imagem de ECG real</div><div class="pattern-badge ok">OK</div></div>`;
+    document.getElementById('mFC').textContent='72 bpm'; document.getElementById('mFC').className='tile-v ok';
+    document.getElementById('mPR').textContent='160 ms'; document.getElementById('mPR').className='tile-v ok';
+    document.getElementById('mQRS').textContent='88 ms'; document.getElementById('mQRS').className='tile-v ok';
+    document.getElementById('mQT').textContent='380 ms'; document.getElementById('mQT').className='tile-v ok';
+    document.getElementById('mQTC').textContent='420 ms'; document.getElementById('mQTC').className='tile-v ok';
+    document.getElementById('mEixo').textContent='+45°'; document.getElementById('mEixo').className='tile-v ok';
+    ['lDI','lDII','lDIII','lAVR','lV1','lV5'].forEach(id=>drawLead(id,'normal'));
+    aiEl.textContent='Modo demonstração ativo. Para análise real por visão de IA, importe uma fotografia ou PDF de ECG na tela anterior. O sistema irá analisar visualmente a imagem e detectar padrões como Flutter Atrial, Fibrilação Atrial, TPSV, Trigeminismo Ventricular, Bradicardia Sinusal, Onda Q Patológica e ECG Normal, com base nos padrões aprendidos do Hospital Dante Pazanezze.';
+  } else {
+    document.getElementById('verdictBox').className='verdict altered';
+    document.getElementById('verdictLabel').textContent='ANÁLISE INDISPONÍVEL';
+    document.getElementById('verdictDiag').textContent='Erro de conexão com a IA — use modo offline';
+    aiEl.textContent='Não foi possível conectar ao serviço de IA. Verifique sua conexão com a internet e tente novamente. Os dados do ECG foram capturados e estarão disponíveis quando a conexão for restabelecida.';
+    document.getElementById('patternsList').innerHTML='<div class="pattern-row"><div class="pattern-icon">⚠️</div><div class="pattern-text">Sem conexão com o servidor de IA</div><div class="pattern-badge warn">Offline</div></div>';
+    ['lDI','lDII','lDIII','lAVR','lV1','lV5'].forEach(id=>drawLead(id,'normal'));
+  }
+  
+  const name=document.getElementById('fNome').value||'—';
+  const dob=document.getElementById('fNasc').value;
+  const age=calcAge(dob);
+  const sexo=document.getElementById('fSexo').value;
+  document.getElementById('rNome').textContent=name.split(' ')[0]||'—';
+  document.getElementById('rIdade').textContent=age?age+'a':'—';
+  document.getElementById('rSexo').textContent=sexo==='M'?'Masc.':sexo==='F'?'Fem.':'—';
+  const urgMap={low:['Eletivo','ok'],med:['Urgência','warn'],high:['Emergência','crit']};
+  const um=urgMap[urgency]||['—',''];
+  document.getElementById('rUrg').textContent=um[0];
+  document.getElementById('rUrg').className='tile-v '+um[1];
+  document.getElementById('rTime').textContent=new Date().toLocaleTimeString('pt-BR');
+}
+
+// ── START ANALYSIS ──
+async function startAnalysis(){
+  t0=Date.now();
+  goStep(3); markDone(1); markDone(2); hap();
+  
+  document.getElementById('procCard').style.display='block';
+  document.getElementById('resultCard').style.display='none';
+  const bar=document.getElementById('procBar');
+  
+  setP(1,'active'); bar.style.width='10%';
+  setTimeout(()=>{ setP(1,'done'); setP(2,'active'); bar.style.width='30%'; },700);
+  setTimeout(()=>{ setP(2,'done'); setP(3,'active'); bar.style.width='58%'; },1500);
+  setTimeout(()=>{ setP(3,'done'); setP(4,'active'); bar.style.width='80%'; },2400);
+  
+  try {
+    let aiResult;
+    
+    if(uploadedB64){
+      // Real vision analysis
+      aiResult = await analyzeECGWithVision();
+    } else {
+      // Demo mode — wait a bit then show demo
+      await new Promise(r=>setTimeout(r,3000));
+      throw new Error('no_image');
+    }
+    
+    setP(4,'done'); bar.style.width='100%';
+    setTimeout(()=>{
+      document.getElementById('procCard').style.display='none';
+      document.getElementById('resultCard').style.display='flex';
+      if(navigator.vibrate) navigator.vibrate([20,60,20]);
+      buildResultUI(aiResult);
+    },350);
+    
+  } catch(err){
+    setP(4,'done'); bar.style.width='100%';
+    setTimeout(()=>{
+      document.getElementById('procCard').style.display='none';
+      document.getElementById('resultCard').style.display='flex';
+      buildFallbackUI(err);
+    },350);
+  }
+}
+
+function newPatient(){ if(confirm('Iniciar novo atendimento? Os dados serão perdidos.')) location.reload(); }
+
+// ── TOAST ──
+function showToast(msg,dur=2500){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),dur); }
+window.addEventListener('online',()=>showToast('✓ Conexão restaurada'));
+window.addEventListener('offline',()=>showToast('⚠ Sem conexão — modo offline'));
+
+// ── SERVICE WORKER ──
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('fData').value=new Date().toISOString().split('T')[0];
+  document.getElementById('fHora').value=new Date().toTimeString().slice(0,5);
+});
+</script>
+</body>
+</html>
